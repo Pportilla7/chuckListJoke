@@ -1,25 +1,51 @@
-let botonJoke= document.getElementById('fetchJoke');
-const url='https://api.chucknorris.io/jokes/random';
-let index=0;
-console.log(botonJoke);
+document.addEventListener("DOMContentLoaded", () => {
+    cargarChistes()
+})
+
+let botonJoke= document.getElementById('fetchJoke')
+let clearAll = document.getElementById("clearAll")
+let listaUl = document.getElementById('jokeList')
+const url = 'https://api.chucknorris.io/jokes/random'
+let index = parseInt(localStorage.getItem('index')) || 0
+
+clearAll.addEventListener('click', () => {
+    localStorage.clear()
+    listaUl.innerHTML = ''
+})
 
 botonJoke.addEventListener('click', ()=>{
-    recibirChiste();
-    crearElementoLista();
+    recibirChiste()
+})
+
+function cargarChistes() {
+    for (let i = 0; i < localStorage.length; i++) {
+        let clave = localStorage.key(i)
+        let valor = localStorage.getItem(clave)
+        if (clave.startsWith('chiste')) {
+            crearElementoLista(valor, clave.split('-')[1])
+        }
+    }
 }
 
+function crearElementoLista(valor,index){
+    let nuevoLi = document.createElement("li")
 
+    let parrafo = document.createElement('p')
+    parrafo.textContent = valor
+    parrafo.id = `parrafo-${index}`
 
-function crearElementoLista(){
-    let listaUl=getElementById('jokeList');
-    let nuevoLiHTML = `
-    <li>
-        <p id="parrafo-${indice}>¡Esta es una broma genial!</p>
-        <button id="boton-${indice}">Borrar broma</button>
-    </li>
-    `;
-    listaUl.appendchild(nuevoLiHTML);
-    console.log(listaUl);
+    let boton_borrar = document.createElement('button')
+    boton_borrar.textContent = 'Borrar chiste'
+    boton_borrar.id = `boton-${index}`
+    boton_borrar.addEventListener('click', () => {
+        localStorage.removeItem(`chiste${index}`)
+        nuevoLi.remove()
+    });
+
+    nuevoLi.appendChild(parrafo)
+    parrafo.insertAdjacentElement('afterend',boton_borrar)
+
+    listaUl.appendChild(nuevoLi)
 
 }
 
@@ -28,14 +54,16 @@ function recibirChiste(){
         .then((response)=>{
             if(!response.ok)
             {
-                throw new Error ('Hay un error en acceder a la API');
+                throw new Error ('Hay un error en acceder a la API')
             }
-            return response.json();
+            return response.json()
         })
         .then((data)=>{
-            localStorage.setItem('chiste',data.value);
+            localStorage.setItem(`chiste${index}`,data.value)
+            crearElementoLista(data.value,index)
+            index++
         })
         .catch((error)=>{
-            console.log(error);
+            console.log(error)
         })
 }
